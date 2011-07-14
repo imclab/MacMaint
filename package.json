@@ -11,7 +11,9 @@
 		},
 	"dependencies": {
 		"cli":"0.3.x",
+		"step" : "*",
 		"creationix":"*",
-		"logging" : "*"
+		"logging" : "*",
+		"cli-color" : "*"
 	}
 }
