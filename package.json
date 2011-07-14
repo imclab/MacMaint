@@ -1,0 +1,16 @@
+{
+	"author": "Aaron Lampros <alampros@gmail.com>",
+	"name": "maint",
+	"description": "Beefy maintenance tasks made easy",
+	"version": "0.0.1",
+	"private": true,
+	"engines" : ["node"],
+	"main": "./maint.js",
+	"bin" : { 
+		"maint" : "./maint.js"
+		},
+	"dependencies": {
+		"cli":"0.3.x",
+		"logging" : "*"
+	}
+}
