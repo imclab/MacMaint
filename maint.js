@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 var cli = require('cli').enable('version','status'),
-	log = require('logging'),
 	step = require('step'),
 	spawn = require('child_process').spawn,
 	clc = require('cli-color');
@@ -24,10 +23,9 @@ var runProcess = function(confObj) {
 	settings.DESC		= "";
 	settings.SHORT_NAME	= "";
 	settings.onExit		= function(code) {
-								log(clc.magenta(code));
 								if(code < 2) {
 									cli.ok("DONE: "+settings.DESC);
-									cli.spinner('\n',true);
+									cli.spinner('DONE: '+settings.DESC+'\n',true);
 									settings.hook();
 								} else {
 									cli.error(clc.red.inverse.bold(' FAILED ')+" "+settings.DESC);
@@ -69,7 +67,7 @@ cli.main(function(args, options) {
 				hook		: stephook,
 				cmd			: {cmd:"port",args:['-d','sync']}
 			}
-			syncPorts.cmd = {cmd:"ls",args:['-la']}
+			// syncPorts.cmd = {cmd:"ls",args:['-la']}
 			runProcess(syncPorts);
 		},
 		function() {
@@ -200,32 +198,3 @@ function outlog(str) {
 
 
 
-
-
-// GARBAGE
-
-var blah = function(err) {
-	if (err) cli.error(err);
-	var $DESC = "Updating installed ports",
-		$SHORT_NAME = "PORTUPDATE",
-		stephook = this;
-	outlog(clc.yellow.underline.bold("BEGIN:")+" "+clc.bold($DESC));
-	var p = spawn('port', ['upgrade','outdated']);
-	cli.spinner('Scienceing...');
-	p.stdout.on('data', function (data) {
-		outlog(indentLines(data,$SHORT_NAME));
-	});
-	p.stderr.on('data', function (data) {
-		outlog(clc.red.bold(data));
-	});
-	p.on('exit', function (code) {
-		if(code == 0 || code == 1) {
-			cli.ok("DONE: "+$DESC);
-			cli.spinner('\n',true);
-			stephook();
-		} else {
-			log(arguments);
-			cli.error(clc.red.inverse.bold(' FAILED ')+" "+$DESC);
-		}
-	});
-}

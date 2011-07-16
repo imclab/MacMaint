@@ -13,7 +13,6 @@
 		"cli":"0.3.x",
 		"step" : "*",
 		"creationix":"*",
-		"logging" : "*",
 		"cli-color" : "*"
 	}
 }
