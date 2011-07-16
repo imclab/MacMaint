@@ -7,10 +7,10 @@ var cli = require('cli').enable('version','status'),
 cli.setApp('maint', "0.0.1");
 
 cli.parse({
-	clean:		['c', 'Clean all installed macports revs'],
-	gems:		['g', 'Update ruby gems'],
-	sweep:		['u', 'Remove all inactive ports'],
-	system:		['s', 'Check for system software updates']
+	clean:		['c', 'Clean all installed macports revs','boolean',true],
+	gems:		['g', 'Update ruby gems','boolean',true],
+	sweep:		['u', 'Remove all inactive ports','boolean',true],
+	system:		['s', 'Check for system software updates','boolean',true]
 });
 
 
