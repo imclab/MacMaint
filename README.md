@@ -1,3 +1,3 @@
 #MacMaint
 
-Runs some maintenance stuff on your mac
+Maintenance goodies for your unixy mac.
