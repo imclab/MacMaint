@@ -7,7 +7,7 @@ var cli = require('cli').enable('version','status'),
 cli.setApp('maint', "0.0.1");
 
 cli.parse({
-	dryrun:		['n', 'Dry run. Don\'t actually perform installs or actions for macports operations','boolean',false],
+	dryrun:		['n', 'Dry run. Don\'t actually perform installs or actions','boolean',false],
 	clean:		['c', 'Clean all installed macports revs','boolean',true],
 	gems:		['g', 'Update ruby gems','boolean',true],
 	sweep:		['u', 'Remove all inactive ports','boolean',true],
