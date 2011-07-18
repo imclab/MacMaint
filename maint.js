@@ -7,6 +7,7 @@ var cli = require('cli').enable('version','status'),
 cli.setApp('maint', "0.0.1");
 
 cli.parse({
+	dryrun:		['n', 'Dry run. Don\'t actually perform installs or actions for macports operations','boolean',false],
 	clean:		['c', 'Clean all installed macports revs','boolean',true],
 	gems:		['g', 'Update ruby gems','boolean',true],
 	sweep:		['u', 'Remove all inactive ports','boolean',true],
@@ -42,7 +43,7 @@ var runProcess = function(confObj) {
 	for (var attr in confObj) {
 		settings[attr] = confObj[attr];
 	}
-	
+	outlog('===========================');
 	outlog(clc.yellow.underline.bold("BEGIN:")+" "+clc.bold(settings.DESC));
 	var p = spawn(settings.cmd.cmd, settings.cmd.args);
 	cli.spinner('Scienceing...');
@@ -67,6 +68,8 @@ cli.main(function(args, options) {
 				hook		: stephook,
 				cmd			: {cmd:"port",args:['-d','sync']}
 			}
+			if(options.debug) syncPorts.cmd.args.unshift('-d');
+			if(options.dryrun) syncPorts.cmd.args.unshift('-y');
 			// syncPorts.cmd = {cmd:"ls",args:['-la']}
 			runProcess(syncPorts);
 		},
@@ -78,6 +81,8 @@ cli.main(function(args, options) {
 				hook		: stephook,
 				cmd			: {cmd:"port",args:['upgrade','outdated']}
 			}
+			if(options.debug) syncPorts.cmd.args.unshift('-d');
+			if(options.dryrun) syncPorts.cmd.args.unshift('-y');
 			runProcess(syncPorts);
 		},
 		function() {
@@ -89,6 +94,8 @@ cli.main(function(args, options) {
 				hook		: stephook,
 				cmd			: {cmd:"port",args:['clean','--all','installed']}
 			}
+			if(options.debug) syncPorts.cmd.args.unshift('-d');
+			if(options.dryrun) syncPorts.cmd.args.unshift('-y');
 			runProcess(syncPorts);
 		},
 		function() {
@@ -100,6 +107,8 @@ cli.main(function(args, options) {
 				hook		: stephook,
 				cmd			: {cmd:"port",args:['-f','uninstall','inactive']}
 			}
+			if(options.debug) syncPorts.cmd.args.unshift('-d');
+			if(options.dryrun) syncPorts.cmd.args.unshift('-y');
 			runProcess(syncPorts);
 		},
 		function() {
@@ -110,6 +119,10 @@ cli.main(function(args, options) {
 				SHORT_NAME	: "GEMS",
 				hook		: stephook,
 				cmd			: {cmd:"gem",args:['update']}
+			}
+			if(options.dryrun) {
+				syncPorts.DESC = "Outdated ruby gems:";
+				syncPorts.cmd.args = ['outdated'];
 			}
 			runProcess(syncPorts);
 		},
