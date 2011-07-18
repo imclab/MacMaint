@@ -25,8 +25,7 @@ var runProcess = function(confObj) {
 	settings.SHORT_NAME	= "";
 	settings.onExit		= function(code) {
 								if(code < 2) {
-									cli.ok("DONE: "+settings.DESC);
-									cli.spinner('DONE: '+settings.DESC+'\n',true);
+									cli.spinner(clc.yellow.inverse.bold('DONE:')+' '+settings.DESC+'\n',true);
 									settings.hook();
 								} else {
 									cli.error(clc.red.inverse.bold(' FAILED ')+" "+settings.DESC);
@@ -43,7 +42,9 @@ var runProcess = function(confObj) {
 	for (var attr in confObj) {
 		settings[attr] = confObj[attr];
 	}
-	outlog('===========================');
+	outlog('\n');
+	outlog(clc.white.underline('                                        '));
+	outlog('\n');
 	outlog(clc.yellow.underline.bold("BEGIN:")+" "+clc.bold(settings.DESC));
 	var p = spawn(settings.cmd.cmd, settings.cmd.args);
 	cli.spinner('Scienceing...');
@@ -130,30 +131,45 @@ cli.main(function(args, options) {
 			var stephook = this;
 			var syncPorts = {
 				DESC		: "Periodic Daily maintenance scripts",
-				SHORT_NAME	: "PERIODIC",
+				SHORT_NAME	: "OSX",
 				hook		: stephook,
 				cmd			: {cmd:"periodic",args:['daily']}
 			}
+			if(options.dryrun) syncPorts.cmd = {cmd:'echo',args:['"Dry Run"']};
 			runProcess(syncPorts);
 		},
 		function() {
 			var stephook = this;
 			var syncPorts = {
 				DESC		: "Periodic Weekly maintenance scripts",
-				SHORT_NAME	: "PERIODIC",
+				SHORT_NAME	: "OSX",
 				hook		: stephook,
 				cmd			: {cmd:"periodic",args:['weekly']}
 			}
+			if(options.dryrun) syncPorts.cmd = {cmd:'echo',args:['"Dry Run"']};
 			runProcess(syncPorts);
 		},
 		function() {
 			var stephook = this;
 			var syncPorts = {
 				DESC		: "Periodic Monthly maintenance scripts",
-				SHORT_NAME	: "PERIODIC",
+				SHORT_NAME	: "OSX",
 				hook		: stephook,
 				cmd			: {cmd:"periodic",args:['Monthly']}
 			}
+			if(options.dryrun) syncPorts.cmd = {cmd:'echo',args:['"Dry Run"']};
+			runProcess(syncPorts);
+		},
+		function() {
+			var stephook = this;
+			var syncPorts = {
+				DESC		: "Listing OS X Software Updates - LIST ONLY",
+				SHORT_NAME	: "OSX",
+				hook		: stephook,
+				onErrData	: function(){},
+				cmd			: {cmd:"softwareupdate",args:['-l']}
+			}
+			if(options.dryrun) syncPorts.cmd = {cmd:'echo',args:['"Dry Run"']};
 			runProcess(syncPorts);
 		},
 		function() {
