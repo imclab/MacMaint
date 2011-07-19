@@ -4,6 +4,10 @@ var cli = require('cli').enable('version','status'),
 	spawn = require('child_process').spawn,
 	clc = require('cli-color');
 
+var PORTS_NUM_INSTALLED = 0,
+	PORTS_NUM_OUTDATED = 0;
+	
+
 cli.setApp('maint', "0.0.1");
 
 cli.parse({
@@ -77,6 +81,68 @@ cli.main(function(args, options) {
 		function() {
 			var stephook = this;
 			var syncPorts = {
+				DESC		: "Calculating outdated ports",
+				SHORT_NAME	: "MACPORTS",
+				hook		: stephook,
+				cmd			: {cmd:"port",args:['echo','outdated']}
+			}
+			syncPorts.onOutData	= function(data) {
+				var ports = [];
+				var portsArr = data.toString().split("\n");
+				for (var i=0; i < portsArr.length; i++) {
+					var m = portsArr[i].match(/([^\s]*)\s+@/);
+					if(m) {
+						ports.push(m[1]);
+					}
+				};
+				PORTS_NUM_OUTDATED += ports.length;
+			};
+			syncPorts.onExit = function(code) {
+				if(code < 2) {
+					outlog(indentLines('Outdated ports: '+clc.magenta.bold(PORTS_NUM_OUTDATED),syncPorts.SHORT_NAME));
+					cli.spinner(clc.yellow.inverse.bold('DONE:')+' '+settings.DESC+'\n',true);
+					settings.hook();
+				} else {
+					cli.error(clc.red.inverse.bold(' FAILED ')+" "+settings.DESC);
+					cleanup();
+				}
+			};
+			runProcess(syncPorts);
+		},
+		function() {
+			var stephook = this;
+			var syncPorts = {
+				DESC		: "Getting installed Ports",
+				SHORT_NAME	: "MACPORTS",
+				hook		: stephook,
+				cmd			: {cmd:"port",args:['echo','installed']}
+			}
+			syncPorts.onOutData	= function(data) {
+				var ports = [];
+				var portsArr = data.toString().split("\n");
+				for (var i=0; i < portsArr.length; i++) {
+					var m = portsArr[i].match(/([^\s]*)\s+@/);
+					if(m) {
+						ports.push(m[1]);
+					}
+				};
+				PORTS_NUM_INSTALLED += ports.length;
+			};
+			syncPorts.onExit = function(code) {
+				if(code < 2) {
+					outlog(indentLines('Installed ports: '+clc.magenta.bold(PORTS_NUM_INSTALLED),syncPorts.SHORT_NAME));
+					cli.spinner(clc.yellow.inverse.bold('DONE:')+' '+settings.DESC+'\n',true);
+					settings.hook();
+				} else {
+					cli.error(clc.red.inverse.bold(' FAILED ')+" "+settings.DESC);
+					cleanup();
+				}
+			};
+			runProcess(syncPorts);
+		},
+		function() {
+			var stephook = this;
+			var syncPorts = {
 				DESC		: "Updating installed ports",
 				SHORT_NAME	: "PORTUPDATE",
 				hook		: stephook,
@@ -95,6 +161,12 @@ cli.main(function(args, options) {
 				hook		: stephook,
 				cmd			: {cmd:"port",args:['clean','--all','installed']}
 			}
+			var counter = 0;
+			var dataOutHandler = function(data) {
+				counter += data.toString().split("\n").length;
+				cli.spinner('Cleaning '+clc.magenta(counter)+' of '+clc.magenta(PORTS_NUM_INSTALLED)+' ports... ');
+			};
+			syncPorts.onOutData = dataOutHandler;
 			if(options.debug) syncPorts.cmd.args.unshift('-d');
 			if(options.dryrun) syncPorts.cmd.args.unshift('-y');
 			runProcess(syncPorts);
@@ -178,13 +250,6 @@ cli.main(function(args, options) {
 	)
 });
 
-
-// cli.parse({
-// 	clean:		['c', 'Clean all installed macports revs'],
-// 	gems:		['g', 'Update ruby gems'],
-// 	sweep:		['u', 'Remove all inactive ports'],
-// 	system:		['s', 'Check for system software updates']
-// });
 
 function cleanup() {
 	//cleanup
