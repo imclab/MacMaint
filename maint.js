@@ -29,7 +29,7 @@ var runProcess = function(confObj) {
 	settings.SHORT_NAME	= "";
 	settings.onExit		= function(code) {
 								if(code < 2) {
-									cli.spinner(clc.yellow.inverse.bold('DONE:')+' '+settings.DESC+'\n',true);
+									cli.spinner(clc.yellow.inverse.bold('DONE')+'\n',true);
 									settings.hook();
 								} else {
 									cli.error(clc.red.inverse.bold(' FAILED ')+" "+settings.DESC);
@@ -46,9 +46,7 @@ var runProcess = function(confObj) {
 	for (var attr in confObj) {
 		settings[attr] = confObj[attr];
 	}
-	outlog('\n');
-	outlog(clc.white.underline('                                        '));
-	outlog('\n');
+	hr();
 	outlog(clc.yellow.underline.bold("BEGIN:")+" "+clc.bold(settings.DESC));
 	var p = spawn(settings.cmd.cmd, settings.cmd.args);
 	cli.spinner('Scienceing...');
@@ -75,7 +73,8 @@ cli.main(function(args, options) {
 			}
 			if(options.debug) syncPorts.cmd.args.unshift('-d');
 			if(options.dryrun) syncPorts.cmd.args.unshift('-y');
-			// syncPorts.cmd = {cmd:"ls",args:['-la']}
+			syncPorts.onErrData = function(data) {};
+			// syncPorts.cmd = {cmd:"ls",args:['-al']};
 			runProcess(syncPorts);
 		},
 		function() {
@@ -99,9 +98,13 @@ cli.main(function(args, options) {
 			};
 			syncPorts.onExit = function(code) {
 				if(code < 2) {
-					outlog(indentLines('Outdated ports: '+clc.magenta.bold(PORTS_NUM_OUTDATED),syncPorts.SHORT_NAME));
-					cli.spinner(clc.yellow.inverse.bold('DONE:')+' '+settings.DESC+'\n',true);
-					settings.hook();
+					if(PORTS_NUM_OUTDATED) {
+						outlog(indentLines('Outdated ports: '+clc.magenta.bold(PORTS_NUM_OUTDATED),syncPorts.SHORT_NAME));
+					} else {
+						outlog(clc.green('No ports are outdated. Huzzah!'));
+					}
+					cli.spinner(clc.yellow.inverse.bold('DONE')+' '+settings.DESC+'\n',true);
+					syncPorts.hook();
 				} else {
 					cli.error(clc.red.inverse.bold(' FAILED ')+" "+settings.DESC);
 					cleanup();
@@ -112,7 +115,7 @@ cli.main(function(args, options) {
 		function() {
 			var stephook = this;
 			var syncPorts = {
-				DESC		: "Getting installed Ports",
+				DESC		: "Counting installed Ports",
 				SHORT_NAME	: "MACPORTS",
 				hook		: stephook,
 				cmd			: {cmd:"port",args:['echo','installed']}
@@ -131,8 +134,8 @@ cli.main(function(args, options) {
 			syncPorts.onExit = function(code) {
 				if(code < 2) {
 					outlog(indentLines('Installed ports: '+clc.magenta.bold(PORTS_NUM_INSTALLED),syncPorts.SHORT_NAME));
-					cli.spinner(clc.yellow.inverse.bold('DONE:')+' '+settings.DESC+'\n',true);
-					settings.hook();
+					cli.spinner(clc.yellow.inverse.bold('DONE')+'\n',true);
+					syncPorts.hook();
 				} else {
 					cli.error(clc.red.inverse.bold(' FAILED ')+" "+settings.DESC);
 					cleanup();
@@ -148,9 +151,15 @@ cli.main(function(args, options) {
 				hook		: stephook,
 				cmd			: {cmd:"port",args:['upgrade','outdated']}
 			}
-			if(options.debug) syncPorts.cmd.args.unshift('-d');
-			if(options.dryrun) syncPorts.cmd.args.unshift('-y');
-			runProcess(syncPorts);
+			if(!PORTS_NUM_OUTDATED) {
+				hr();
+				outlog(clc.green.inverse('SKIP:')+clc.green(' No ports require updating. Yay!'));
+				this();
+			} else {
+				if(options.debug) syncPorts.cmd.args.unshift('-d');
+				if(options.dryrun) syncPorts.cmd.args.unshift('-y');
+				runProcess(syncPorts);
+			}
 		},
 		function() {
 			if(!options.clean) return this;
@@ -161,12 +170,23 @@ cli.main(function(args, options) {
 				hook		: stephook,
 				cmd			: {cmd:"port",args:['clean','--all','installed']}
 			}
-			var counter = 0;
-			var dataOutHandler = function(data) {
-				counter += data.toString().split("\n").length;
-				cli.spinner('Cleaning '+clc.magenta(counter)+' of '+clc.magenta(PORTS_NUM_INSTALLED)+' ports... ');
+			var cleancounter = 0;
+			syncPorts.onOutData = function(data) {
+				cleancounter ++;// data.toString().split("\n").length;
+				var progstr='\u000D\t\t\tCleaning '+clc.magenta(cleancounter)+' of '+clc.magenta(PORTS_NUM_INSTALLED)+' ports... ';
+				cli.native.util.print(progstr);
 			};
-			syncPorts.onOutData = dataOutHandler;
+			syncPorts.onExit = function(code) {
+				if(code < 2) {
+					cli.native.util.print('\n');
+					cli.spinner(clc.yellow.inverse.bold('DONE')+'\n',true);
+					syncPorts.hook();
+				} else {
+					cli.error(clc.red.inverse.bold(' FAILED ')+" "+syncPorts.DESC);
+					cleanup();
+				}
+			};
+			syncPorts.onErrData = function(){};
 			if(options.debug) syncPorts.cmd.args.unshift('-d');
 			if(options.dryrun) syncPorts.cmd.args.unshift('-y');
 			runProcess(syncPorts);
@@ -287,7 +307,9 @@ function outlog(str) {
 	cli.native.util.print('\u000D');
 }
 
-
+function hr() {
+	outlog(clc.white.underline('                                               '));
+}
 
 
 
