@@ -65,6 +65,17 @@ cli.main(function(args, options) {
 	step(
 		function() {
 			var stephook = this;
+			var logup = {
+				DESC		: "Logging uptime",
+				SHORT_NAME	: "LOGUP",
+				hook		: stephook,
+				cmd			: {cmd:"logup.sh",args:[]}
+			}
+			logup.onErrData = function(data) {};
+			runProcess(logup);
+		},
+		function() {
+			var stephook = this;
 			var syncPorts = {
 				DESC		: "Syncing the macports ports tree",
 				SHORT_NAME	: "MACPORTS",
