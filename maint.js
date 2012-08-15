@@ -263,18 +263,18 @@ cli.main(function(args, options) {
 			if(options.dryrun) syncPorts.cmd = {cmd:'echo',args:['"Dry Run"']};
 			runProcess(syncPorts);
 		},
-		function() {
-			var stephook = this;
-			var syncPorts = {
-				DESC		: "Listing OS X Software Updates - LIST ONLY",
-				SHORT_NAME	: "OSX",
-				hook		: stephook,
-				onErrData	: function(){},
-				cmd			: {cmd:"softwareupdate",args:['-l']}
-			}
-			if(options.dryrun) syncPorts.cmd = {cmd:'echo',args:['"Dry Run"']};
-			runProcess(syncPorts);
-		},
+//		function() {
+//			var stephook = this;
+//			var syncPorts = {
+//				DESC		: "Listing OS X Software Updates - LIST ONLY",
+//				SHORT_NAME	: "OSX",
+//				hook		: stephook,
+//				onErrData	: function(){},
+//				cmd			: {cmd:"softwareupdate",args:['-l']}
+//			}
+//			if(options.dryrun) syncPorts.cmd = {cmd:'echo',args:['"Dry Run"']};
+//			runProcess(syncPorts);
+//		},
 		function() {
 			cleanup();
 		}
